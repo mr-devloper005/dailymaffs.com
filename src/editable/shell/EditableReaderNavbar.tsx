@@ -1,1 +1,6 @@
-export { EditableNavbar as EditableReaderNavbar } from '@/editable/shell/EditableNavbar'
+﻿import { EditableNavbar } from '@/editable/shell/EditableNavbar'
+
+export function EditableReaderNavbar() {
+  return <EditableNavbar />
+}
+

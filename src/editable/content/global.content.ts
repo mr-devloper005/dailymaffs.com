@@ -1,47 +1,47 @@
-import { slot4BrandConfig } from '@/editable/theme/brand.config'
+﻿import { slot4BrandConfig } from '@/editable/theme/brand.config'
 
 export const globalContent = {
   site: {
     name: slot4BrandConfig.siteName,
-    tagline: slot4BrandConfig.tagline || 'Independent reading platform',
+    tagline: slot4BrandConfig.tagline || 'Daily reading and discovery',
     domain: slot4BrandConfig.domain,
     baseUrl: slot4BrandConfig.baseUrl,
   },
   nav: {
-    tagline: 'Independent reading platform',
+    tagline: 'Daily reading and discovery',
     primaryLinks: [
-      { label: 'Articles', href: '/articles' },
-      { label: 'Visuals', href: '/image-sharing' },
-      { label: 'Listings', href: '/listings' },
+      { label: 'Home', href: '/' },
+      { label: 'Articles', href: '/article' },
+      { label: 'Images', href: '/image' },
       { label: 'Contact', href: '/contact' },
     ],
     actions: {
-      primary: { label: 'Start exploring', href: '/' },
-      secondary: { label: 'Submit', href: '/contact' },
+      primary: { label: 'Browse now', href: '/' },
+      secondary: { label: 'Contact', href: '/contact' },
     },
   },
   footer: {
-    tagline: 'Stories, resources, and discoverable posts',
-    description: 'A connected publishing surface for articles, visuals, listings, profiles, bookmarks, and downloadable resources.',
+    tagline: 'Clean sections and practical stories',
+    description: 'A structured reading website covering articles, collections, listings, profiles, and resources.',
     columns: [
       {
         title: 'Explore',
         links: [
-          { label: 'Articles', href: '/articles' },
-          { label: 'Listings', href: '/listings' },
-          { label: 'Images', href: '/image-sharing' },
-          { label: 'PDF Library', href: '/pdf' },
+          { label: 'Articles', href: '/article' },
+          { label: 'Listings', href: '/listing' },
+          { label: 'Images', href: '/image' },
+          { label: 'Documents', href: '/pdf' },
         ],
       },
       {
-        title: 'Site',
+        title: 'Pages',
         links: [
           { label: 'About', href: '/about' },
           { label: 'Contact', href: '/contact' },
         ],
       },
     ],
-    bottomNote: 'Built for clean discovery and connected publishing.',
+    bottomNote: 'Designed for easy reading and browsing.',
   },
   commonLabels: {
     readMore: 'Read more',
@@ -52,3 +52,4 @@ export const globalContent = {
     published: 'Published',
   },
 } as const
+
