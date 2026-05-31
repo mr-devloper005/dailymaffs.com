@@ -1,4 +1,4 @@
-import { siteIdentity } from '@/config/site.identity'
+﻿import { siteIdentity } from '@/config/site.identity'
 import { getFactoryState } from '@/design/factory/get-factory-state'
 import { getProductKind } from '@/design/factory/get-product-kind'
 
@@ -14,10 +14,12 @@ export const slot4BrandConfig = {
   ogImage: siteIdentity.ogImage,
   accents:
     productKind === 'visual'
-      ? { primary: '#8df0c8', surface: '#07101f' }
+      ? { primary: '#1d1d1d', surface: '#f2f2f2' }
       : productKind === 'editorial'
-        ? { primary: '#241711', surface: '#fbf6ee' }
+        ? { primary: '#007979', surface: '#FFF0E4' }
         : productKind === 'directory'
-          ? { primary: '#0f172a', surface: '#f8fbff' }
-          : { primary: '#5b2b3b', surface: '#f7f1ea' },
+          ? { primary: '#007979', surface: '#FFF0E4' }
+          : { primary: '#007979', surface: '#eeeeee' },
 } as const
+
+
