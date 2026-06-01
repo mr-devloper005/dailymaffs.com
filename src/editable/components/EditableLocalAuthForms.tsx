@@ -1,7 +1,8 @@
-﻿'use client'
+'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { pagesContent } from '@/editable/content/pages.content'
 
 const USERS_KEY = 'slot4:local-auth-users'
 const SESSION_KEY = 'slot4:local-auth-session'
@@ -30,8 +31,8 @@ const saveSession = (user: Pick<LocalUser, 'name' | 'email'>) => {
   window.dispatchEvent(new Event('slot4-auth-change'))
 }
 
-const inputClass = 'h-11 rounded-xl border border-[#007979]/15 bg-white px-4 text-base font-bold text-black outline-none transition placeholder:text-black/35 focus:border-[#007979]'
-const buttonClass = 'inline-flex h-11 items-center justify-center rounded-full border border-[#007979] bg-[#007979] px-6 text-sm font-extrabold uppercase tracking-[0.2em] text-white transition hover:bg-[#24B1B1] disabled:opacity-60'
+const inputClass = 'h-12 rounded-2xl border border-[var(--editable-border)] bg-white/85 px-4 text-base font-bold text-current outline-none transition placeholder:text-current/35 focus:border-current focus:bg-white'
+const buttonClass = 'inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--editable-page-text,#2f1d16)] px-6 text-sm font-black uppercase tracking-[0.18em] text-[var(--editable-page-bg,#fff7ee)] shadow-sm transition hover:-translate-y-0.5 disabled:opacity-60'
 
 export function EditableLocalLoginForm() {
   const router = useRouter()
@@ -46,21 +47,21 @@ export function EditableLocalLoginForm() {
     const user = readUsers().find((item) => item.email.toLowerCase() === normalizedEmail)
     if (!user || user.password !== password) {
       setStatus('error')
-      setMessage('No local account found with these details. Create an account first, then login.')
+      setMessage(pagesContent.auth.login.noAccount)
       return
     }
     saveSession(user)
     setStatus('success')
-    setMessage(`Logged in locally as ${user.name}. Redirecting...`)
+    setMessage(pagesContent.auth.login.success)
     window.setTimeout(() => router.push('/'), 500)
   }
 
   return (
-    <form className="mt-5 grid gap-4" onSubmit={submit}>
+    <form className="mt-6 grid gap-4" onSubmit={submit}>
       <input className={inputClass} type="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required />
       <input className={inputClass} type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-      {message ? <p className={`rounded-xl px-4 py-3 text-sm font-bold ${status === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{message}</p> : null}
-      <button type="submit" className={buttonClass}>Continue</button>
+      {message ? <p className={`rounded-2xl px-4 py-3 text-sm font-bold ${status === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{message}</p> : null}
+      <button type="submit" className={buttonClass}>{pagesContent.auth.login.submitLabel}</button>
     </form>
   )
 }
@@ -79,12 +80,12 @@ export function EditableLocalSignupForm() {
     const normalizedEmail = email.trim().toLowerCase()
     if (password.length < 4) {
       setStatus('error')
-      setMessage('Use at least 4 characters for local demo password.')
+      setMessage(pagesContent.auth.signup.passwordShort)
       return
     }
     const users = readUsers()
     const nextUser: LocalUser = {
-      name: normalizedName || normalizedEmail.split('@')[0] || 'Local User',
+      name: normalizedName || normalizedEmail.split('@')[0] || 'Member',
       email: normalizedEmail,
       password,
       createdAt: new Date().toISOString(),
@@ -92,17 +93,17 @@ export function EditableLocalSignupForm() {
     saveUsers([nextUser, ...users.filter((item) => item.email.toLowerCase() !== normalizedEmail)])
     saveSession(nextUser)
     setStatus('success')
-    setMessage('Local account created. Redirecting...')
+    setMessage(pagesContent.auth.signup.success)
     window.setTimeout(() => router.push('/'), 500)
   }
 
   return (
-    <form className="mt-5 grid gap-4" onSubmit={submit}>
+    <form className="mt-6 grid gap-4" onSubmit={submit}>
       <input className={inputClass} placeholder="Full name" value={name} onChange={(event) => setName(event.target.value)} required />
       <input className={inputClass} type="email" placeholder="Email address" value={email} onChange={(event) => setEmail(event.target.value)} required />
       <input className={inputClass} type="password" placeholder="Password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-      {message ? <p className={`rounded-xl px-4 py-3 text-sm font-bold ${status === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{message}</p> : null}
-      <button type="submit" className={buttonClass}>Start now</button>
+      {message ? <p className={`rounded-2xl px-4 py-3 text-sm font-bold ${status === 'success' ? 'bg-emerald-50 text-emerald-800' : 'bg-red-50 text-red-700'}`}>{message}</p> : null}
+      <button type="submit" className={buttonClass}>{pagesContent.auth.signup.submitLabel}</button>
     </form>
   )
 }
@@ -136,5 +137,3 @@ export function useEditableLocalAuthSession() {
 
   return { session, logout }
 }
-
-
