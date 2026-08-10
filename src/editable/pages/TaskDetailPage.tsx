@@ -93,7 +93,21 @@ const formatPlainText = (raw: string) => {
     .join('')
 }
 
-const summaryText = (post: SitePost) => post.summary || asText(getContent(post).description) || asText(getContent(post).excerpt) || ''
+const stripHtml = (value: string) => {
+  let s = value
+  for (let i = 0; i < 2; i++) {
+    s = s
+      .replace(/&#(\d+);/g, (_m: string, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_m: string, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/<[^>]*>/g, ' ')
+  }
+  return s.replace(/\s+/g, ' ').trim()
+}
+const summaryText = (post: SitePost) => {
+  const raw = post.summary || asText(getContent(post).description) || asText(getContent(post).excerpt) || ''
+  return raw ? stripHtml(raw) : ''
+}
 const categoryOf = (post: SitePost, fallback: string) => asText(getContent(post).category) || post.tags?.[0] || fallback
 const mapSrcFor = (post: SitePost) => {
   const address = getField(post, ['address', 'location', 'city'])
@@ -134,17 +148,39 @@ function BackLink({ task }: { task: TaskKey }) {
 
 function ArticleDetail({ post, related, comments }: { post: SitePost; related: SitePost[]; comments: Array<{ id: string; name: string; comment: string; createdAt: string }> }) {
   const images = getImages(post)
+  const category = categoryOf(post, 'Article')
+  const published = post.publishedAt ? new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(post.publishedAt)) : ''
+
   return (
-    <section className="mx-auto grid max-w-[var(--editable-container)] gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_350px] lg:px-8 lg:py-16">
-      <article className="min-w-0 rounded-[2.7rem] border border-[var(--editable-border)] bg-[var(--detail-surface)] p-5 shadow-[0_30px_90px_rgba(15,23,42,0.09)] sm:p-8 lg:p-12">
-        <BackLink task="article" />
-        <p className="mt-8 text-xs font-black uppercase tracking-[0.28em] text-[var(--detail-accent)]">{categoryOf(post, 'Article')}</p>
-        <h1 className="mt-4 text-4xl font-black leading-[0.98] tracking-[-0.07em] sm:text-5xl lg:text-7xl">{post.title}</h1>
-        {images[0] ? <img src={images[0]} alt="" className="mt-8 max-h-[620px] w-full rounded-[2rem] object-cover" /> : null}
-        <BodyContent post={post} />
-        <EditableComments slug={post.slug} comments={comments} />
-      </article>
-      <RelatedPanel task="article" post={post} related={related} />
+    <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <BackLink task="article" />
+
+      <header className="mt-8 max-w-3xl">
+        <span className="inline-block rounded-md bg-[var(--detail-accent)]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--detail-accent)]">{category}</span>
+        <h1 className="mt-4 text-3xl font-bold leading-snug tracking-[-0.03em] sm:text-4xl lg:text-5xl">{post.title}</h1>
+        {published && <p className="mt-3 text-sm text-[var(--detail-text)]/50">{published}</p>}
+      </header>
+
+      {images[0] && (
+        <div className="mt-8 overflow-hidden rounded-xl">
+          <img src={images[0]} alt="" className="max-h-[520px] w-full object-cover" />
+        </div>
+      )}
+
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <article className="min-w-0">
+          <BodyContent post={post} />
+          {images.length > 1 && (
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {images.slice(1, 7).map((src, i) => (
+                <img key={i} src={src} alt="" className="aspect-[4/3] w-full rounded-lg object-cover" />
+              ))}
+            </div>
+          )}
+          <EditableComments slug={post.slug} comments={comments} />
+        </article>
+        <RelatedPanel task="article" post={post} related={related} />
+      </div>
     </section>
   )
 }

@@ -22,7 +22,15 @@ export function getEditableExcerpt(post?: SitePost | null, limit = 150) {
     (typeof content.summary === 'string' && content.summary) ||
     post?.summary ||
     ''
-  const clean = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  let s = raw
+  for (let i = 0; i < 2; i++) {
+    s = s
+      .replace(/&#(\d+);/g, (_m: string, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_m: string, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/<[^>]*>/g, ' ')
+  }
+  const clean = s.replace(/\s+/g, ' ').trim()
   if (!clean) return 'Open this story for full details and related posts.'
   return clean.length > limit ? `${clean.slice(0, limit).trim()}...` : clean
 }
@@ -87,14 +95,14 @@ export function CompactIndexCard({ post, href, index }: { post: SitePost; href: 
   )
 }
 
-export function ArticleListCard({ post, href, index }: { post: SitePost; href: string; index: number }) {
+export function ArticleListCard({ post, href }: { post: SitePost; href: string; index: number }) {
   return (
     <Link href={href} className={`group grid min-w-0 gap-4 overflow-hidden ${dc.surface.card} p-3 ${dc.motion.lift} sm:grid-cols-[220px_minmax(0,1fr)]`}>
       <div className={`${dc.media.frame} aspect-[16/11] sm:aspect-auto sm:min-h-[175px]`}>
         <img src={getEditablePostImage(post)} alt={post.title} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />
       </div>
       <div className="min-w-0 p-2 sm:py-3 sm:pr-4">
-        <p className={`${dc.type.eyebrow} ${pal.accentText}`}>Story {String(index + 1).padStart(2, '0')}</p>
+        <p className={`${dc.type.eyebrow} ${pal.accentText}`}>{getEditableCategory(post)}</p>
         <h2 className="mt-2 line-clamp-2 text-2xl font-black leading-tight tracking-[-0.04em] text-[var(--slot4-page-text)]">{post.title}</h2>
         <p className={`mt-3 line-clamp-3 text-sm leading-7 ${pal.softMutedText}`}>{getEditableExcerpt(post, 170)}</p>
         <span className="mt-4 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.16em]">Open article <ArrowRight className="h-4 w-4" /></span>
