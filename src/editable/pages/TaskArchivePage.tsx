@@ -1,6 +1,6 @@
 ﻿import Link from 'next/link'
 import type { CSSProperties } from 'react'
-import { ArrowRight, Bookmark, BriefcaseBusiness, Building2, Camera, Download, FileText, Filter, Image as ImageIcon, MapPin, Megaphone, Search, UserRound } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Bookmark, BriefcaseBusiness, Building2, Camera, Download, FileText, Filter, Image as ImageIcon, MapPin, Megaphone, Search, UserRound } from 'lucide-react'
 import { buildTaskMetadata } from '@/lib/seo'
 import { CATEGORY_OPTIONS, normalizeCategory } from '@/lib/categories'
 import { fetchPaginatedTaskPosts, buildPostUrl } from '@/lib/task-data'
@@ -36,7 +36,21 @@ const getImages = (post: SitePost) => {
 const placeholder = '/placeholder.svg?height=900&width=1200'
 const getImage = (post: SitePost) => getImages(post)[0] || placeholder
 const getCategory = (post: SitePost, fallback: string) => asText(getContent(post).category) || post.tags?.[0] || fallback
-const getSummary = (post: SitePost) => post.summary || asText(getContent(post).description) || asText(getContent(post).excerpt) || asText(getContent(post).body)
+const stripHtml = (value: string) => {
+  let s = value
+  for (let i = 0; i < 2; i++) {
+    s = s
+      .replace(/&#(\d+);/g, (_m: string, code: string) => String.fromCharCode(Number(code)))
+      .replace(/&#x([0-9a-f]+);/gi, (_m: string, hex: string) => String.fromCharCode(parseInt(hex, 16)))
+      .replace(/&amp;/gi, '&').replace(/&quot;/gi, '"').replace(/&#39;/g, "'").replace(/&lt;/gi, '<').replace(/&gt;/gi, '>')
+      .replace(/<[^>]*>/g, ' ')
+  }
+  return s.replace(/\s+/g, ' ').trim()
+}
+const getSummary = (post: SitePost) => {
+  const raw = post.summary || asText(getContent(post).description) || asText(getContent(post).excerpt) || asText(getContent(post).body)
+  return raw ? stripHtml(raw) : ''
+}
 const getField = (post: SitePost, keys: string[]) => {
   const content = getContent(post)
   for (const key of keys) {
@@ -96,47 +110,34 @@ export function TaskArchiveView({ task, posts, pagination, category, basePath }:
     <EditableSiteShell>
       <main style={archiveVars} className="bg-[#FFF0E4] text-[var(--archive-text)]">
         {task === 'article' ? (
-          <section className="mx-auto max-w-[var(--editable-container)] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-            <div className="grid gap-5 lg:grid-cols-[1fr_320px] lg:items-start">
-              <div className="overflow-hidden rounded-[1.1rem] border border-[var(--editable-border)] bg-white shadow-[0_10px_24px_rgba(0,121,121,0.12)]">
-                <div className="border-b border-[var(--editable-border)] bg-[#24B1B1]/10 px-6 py-4">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-[#007979]/30 bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.2em] text-[#007979]">
-                    <Icon className="h-4 w-4" /> {label}
-                  </div>
+          <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-[#007979]">
+                  <span>{voice?.eyebrow || 'Articles'}</span>
+                  <span className="text-[#007979]/40">/</span>
+                  <span className="text-[#007979]/60">{label}</span>
                 </div>
-                <div className="p-6 sm:p-8">
-                  <h1 className="font-display text-4xl font-bold leading-[1.03] tracking-[-0.03em] text-[#007979] sm:text-5xl">
-                    {voice?.headline || `Browse ${label}`}
-                  </h1>
-                  <p className="mt-4 max-w-2xl text-base leading-8 text-[#2d6e6e]">
-                    {voice?.description || SITE_CONFIG.description}
-                  </p>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-stretch">
-                    <div className="rounded-[0.9rem] border border-[#007979]/20 bg-[#FFF0E4] p-4 text-sm font-bold leading-7 text-[#007979]">
-                      {deck.promise}
-                    </div>
-                    <div className="flex min-w-[220px] flex-col justify-between rounded-[0.9rem] border border-[#007979]/20 bg-[#FFE0C5] p-4 text-sm leading-7 text-[#2d6e6e]">
-                      <p>Clean image-led cards and bold headlines for faster scanning.</p>
-                      <span className="mt-3 inline-flex w-fit rounded-full border border-[#007979]/25 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.14em] text-[#007979]">
-                        Updated Layout
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-7 flex flex-wrap gap-3">
-                    <Link href={basePath} className="rounded-full bg-[#007979] px-5 py-3 text-sm font-black text-white">Browse all</Link>
-                    <Link href="/search" className="rounded-full border border-[#007979]/35 bg-white px-5 py-3 text-sm font-black text-[#007979]">Search posts</Link>
-                  </div>
+                <h1 className="mt-4 max-w-2xl font-display text-4xl font-bold leading-[1.08] tracking-[-0.03em] sm:text-5xl">
+                  {voice?.headline || `Browse ${label}`}
+                </h1>
+                <p className="mt-4 max-w-xl text-sm leading-7 text-[#2d6e6e]">
+                  {voice?.description || SITE_CONFIG.description}
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {(voice?.chips || []).map((chip) => (
+                    <span key={chip} className="rounded-full border border-[#007979]/25 px-3.5 py-1.5 text-[11px] font-bold text-[#007979]">{chip}</span>
+                  ))}
                 </div>
               </div>
 
-              <form action={basePath} className="rounded-[1.1rem] border border-[var(--editable-border)] bg-white p-5 shadow-[0_10px_24px_rgba(0,121,121,0.1)] lg:sticky lg:top-24">
-                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-[#007979]"><Filter className="h-4 w-4" /> Filter</div>
-                <select name="category" defaultValue={category} className="mt-4 h-12 w-full rounded-xl border border-[#007979]/25 bg-[#FFF0E4] px-4 text-sm font-bold text-[#007979] outline-none">
+              <form action={basePath} className="flex items-center gap-3 lg:mt-6">
+                <span className="text-xs font-bold text-[#2d6e6e]">{pagination.total || posts.length} posts / {categoryLabel}</span>
+                <select name="category" defaultValue={category} className="h-10 rounded-lg border border-[#007979]/25 bg-white px-3 text-sm font-bold text-[#007979] outline-none">
                   <option value="all">All categories</option>
                   {CATEGORY_OPTIONS.map((item) => <option key={item.slug} value={item.slug}>{item.name}</option>)}
                 </select>
-                <button className="mt-3 h-12 w-full rounded-xl bg-[#007979] text-sm font-black text-white">Apply</button>
-                <p className="mt-3 text-xs font-bold text-[#2d6e6e]">Showing: {categoryLabel}</p>
+                <button className="h-10 rounded-lg bg-[#007979] px-5 text-sm font-black text-white">Apply</button>
               </form>
             </div>
           </section>
@@ -165,7 +166,7 @@ export function TaskArchiveView({ task, posts, pagination, category, basePath }:
           </section>
         )}
 
-        <section className="mx-auto max-w-[var(--editable-container)] px-4 pb-16 sm:px-6 lg:px-8">
+        <section className={`mx-auto ${task === 'article' ? 'max-w-5xl' : 'max-w-[var(--editable-container)]'} px-4 pb-16 sm:px-6 lg:px-8`}>
           {posts.length ? (
             <div className={deck.archiveClass}>
               {posts.map((post, index) => <ArchivePostCard key={post.id || post.slug} post={post} task={task} basePath={basePath} index={index} activeCategory={category} />)}
@@ -200,29 +201,36 @@ function ArchivePostCard({ post, task, basePath, index, activeCategory }: { post
   return <ArticleArchiveCard post={post} href={href} index={index} activeCategory={activeCategory} />
 }
 
-function ArticleArchiveCard({ post, href, index, activeCategory }: { post: SitePost; href: string; index: number; activeCategory: string }) {
-  const image = getImage(post)
+function ArticleArchiveCard({ post, href, index }: { post: SitePost; href: string; index: number; activeCategory: string }) {
+  const images = getImages(post)
+  const primary = images[0] || placeholder
+  const thumbs = images.slice(1, 5)
   const categoryLabel = getCategory(post, 'Article')
-  const categorySlug = normalizeCategory(categoryLabel)
-  const matchesFilter = activeCategory === 'all' || activeCategory === categorySlug
+  const summary = getSummary(post)
+  const num = String(index + 1).padStart(2, '0')
+
   return (
-    <Link href={href} className="group mx-auto block w-full max-w-[400px] transition duration-300 hover:-translate-y-1">
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#007979]/5">
-        <img src={image} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-      </div>
-      <div className="px-2 pb-1 pt-4 text-center">
-        <div className="mb-3">
-          <span
-            className={`inline-flex rounded-full border px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] ${
-              matchesFilter ? 'border-[#007979] bg-[#007979] text-white' : 'border-[#007979]/35 bg-white text-[#007979]'
-            }`}
-          >
-            {categoryLabel}
-          </span>
+    <Link href={href} className="group block overflow-hidden rounded-2xl border border-[var(--editable-border)] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
+      <div className="relative">
+        <div className="relative aspect-[16/10] overflow-hidden bg-[#007979]/5">
+          <img src={primary} alt="" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <span className="absolute left-4 top-4 rounded-md bg-[#007979] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white">{categoryLabel}</span>
         </div>
-        <h2 className="mx-auto max-w-[88%] line-clamp-3 text-[2rem] font-black uppercase leading-[1.15] tracking-[-0.01em] sm:text-[2.1rem]">
-          {post.title}
-        </h2>
+        {thumbs.length > 0 && (
+          <div className="grid grid-cols-4 gap-1 px-3 -mt-8 relative z-10">
+            {thumbs.map((src, i) => (
+              <div key={i} className="aspect-square overflow-hidden rounded-lg border-2 border-white shadow-sm">
+                <img src={src} alt="" className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="px-5 pb-5 pt-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#007979]/50">Article no. {num}</p>
+        <h2 className="mt-2 line-clamp-3 text-xl font-bold leading-snug tracking-[-0.02em]">{post.title}</h2>
+        {summary ? <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[var(--archive-text)]/55">{summary}</p> : null}
+        <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#007979]">Read article <ArrowUpRight className="h-3.5 w-3.5" /></span>
       </div>
     </Link>
   )
