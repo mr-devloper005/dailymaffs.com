@@ -149,7 +149,6 @@ function BackLink({ task }: { task: TaskKey }) {
 function ArticleDetail({ post, related, comments }: { post: SitePost; related: SitePost[]; comments: Array<{ id: string; name: string; comment: string; createdAt: string }> }) {
   const images = getImages(post)
   const category = categoryOf(post, 'Article')
-  const published = post.publishedAt ? new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(post.publishedAt)) : ''
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
@@ -158,7 +157,6 @@ function ArticleDetail({ post, related, comments }: { post: SitePost; related: S
       <header className="mt-8 max-w-3xl">
         <span className="inline-block rounded-md bg-[var(--detail-accent)]/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-[var(--detail-accent)]">{category}</span>
         <h1 className="mt-4 text-3xl font-bold leading-snug tracking-[-0.03em] sm:text-4xl lg:text-5xl">{post.title}</h1>
-        {published && <p className="mt-3 text-sm text-[var(--detail-text)]/50">{published}</p>}
       </header>
 
       {images[0] && (
@@ -421,7 +419,6 @@ function RelatedPanel({ task, post, related, compact = false }: { task: TaskKey;
           <div className="mt-4 grid gap-3 text-sm font-bold opacity-75">
             <p className="inline-flex items-center gap-2"><Tag className="h-4 w-4" /> Task: {taskConfig?.label || task}</p>
             <p className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Site: {SITE_CONFIG.name}</p>
-            {post.publishedAt ? <p>Published: {new Date(post.publishedAt).toLocaleDateString()}</p> : null}
           </div>
         </div>
       ) : null}
